@@ -8,11 +8,11 @@ from streamlit_option_menu import option_menu
 from agents.orchestrator import OrchestratorAgent
 from utils.logger import setup_logger
 from utils.exceptions import ResumeProcessingError
+import threading
 
 # Add FastAPI for health checks
 from fastapi import FastAPI
 import uvicorn
-from multiprocessing import Process
 
 # Initialize FastAPI
 api = FastAPI()
@@ -24,7 +24,11 @@ def health_check():
 
 # Function to run FastAPI server
 def run_fastapi():
-    uvicorn.run(api, host="0.0.0.0", port=8000)
+    try:
+        port = int(os.getenv('FASTAPI_PORT', '8000'))
+        uvicorn.run(api, host="0.0.0.0", port=port, log_level="info")
+    except Exception as e:
+        logger.error(f"Failed to start FastAPI server: {str(e)}")
 
 # Configure Streamlit page
 st.set_page_config(
@@ -100,6 +104,10 @@ def save_uploaded_file(uploaded_file) -> str:
 
 
 def main():
+    # Start FastAPI in a background thread
+    fastapi_thread = threading.Thread(target=run_fastapi, daemon=True)
+    fastapi_thread.start()
+
     # Sidebar navigation
     with st.sidebar:
         st.image(
@@ -312,9 +320,5 @@ def main():
         )
 
 if __name__ == "__main__":
-    # Start FastAPI in a separate process
-    api_process = Process(target=run_fastapi)
-    api_process.start()
-    
     # Run Streamlit
     main()
