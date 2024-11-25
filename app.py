@@ -11,8 +11,8 @@ from utils.exceptions import ResumeProcessingError
 
 # Add FastAPI for health checks
 from fastapi import FastAPI
-from fastapi.middleware.wsgi import WSGIMiddleware
 import uvicorn
+from multiprocessing import Process
 
 # Initialize FastAPI
 api = FastAPI()
@@ -21,6 +21,10 @@ api = FastAPI()
 @api.get("/health")
 def health_check():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
+# Function to run FastAPI server
+def run_fastapi():
+    uvicorn.run(api, host="0.0.0.0", port=8000)
 
 # Configure Streamlit page
 st.set_page_config(
@@ -308,4 +312,9 @@ def main():
         )
 
 if __name__ == "__main__":
+    # Start FastAPI in a separate process
+    api_process = Process(target=run_fastapi)
+    api_process.start()
+    
+    # Run Streamlit
     main()

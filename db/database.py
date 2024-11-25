@@ -6,7 +6,9 @@ from datetime import datetime
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import sqlite3
+import logging
 
+logger = logging.getLogger(__name__)
 
 class JobDatabase:
     def __init__(self):
@@ -18,47 +20,71 @@ class JobDatabase:
             current_dir = Path(__file__).parent
             self.db_path = current_dir / "jobs.sqlite"
             self.schema_path = current_dir / "schema.sql"
+        else:
+            self.schema_path = Path(__file__).parent / "schema.sql"
         
         self._init_db()
 
     def get_connection(self):
         """Get database connection based on environment"""
-        if self.is_postgres:
-            conn = psycopg2.connect(self.db_url)
-            conn.cursor_factory = RealDictCursor
-            return conn
-        else:
-            return sqlite3.connect(self.db_path)
+        try:
+            if self.is_postgres:
+                conn = psycopg2.connect(self.db_url)
+                conn.cursor_factory = RealDictCursor
+                return conn
+            else:
+                return sqlite3.connect(self.db_path)
+        except Exception as e:
+            logger.error(f"Error connecting to database: {str(e)}")
+            raise
 
     def _init_db(self):
         """Initialize the database with schema"""
-        if self.is_postgres:
-            # For PostgreSQL, first enable the vector extension
+        try:
+            if not self.schema_path.exists():
+                raise FileNotFoundError(f"Schema file not found at {self.schema_path}")
+
+            if self.is_postgres:
+                # For PostgreSQL, first enable the vector extension
+                with self.get_connection() as conn:
+                    with conn.cursor() as cur:
+                        try:
+                            cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+                            conn.commit()
+                        except Exception as e:
+                            logger.error(f"Error creating vector extension: {str(e)}")
+                            # Continue even if vector extension fails
+                            pass
+
+            with open(self.schema_path) as f:
+                schema = f.read()
+
+            # Adjust schema for PostgreSQL if needed
+            if self.is_postgres:
+                schema = schema.replace('AUTOINCREMENT', 'GENERATED ALWAYS AS IDENTITY')
+                schema = schema.replace('TEXT', 'VARCHAR')
+
             with self.get_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+                if self.is_postgres:
+                    # Execute each statement separately for PostgreSQL
+                    statements = [s.strip() for s in schema.split(';') if s.strip()]
+                    with conn.cursor() as cur:
+                        for statement in statements:
+                            try:
+                                cur.execute(statement)
+                                conn.commit()
+                            except Exception as e:
+                                logger.error(f"Error executing statement: {str(e)}\nStatement: {statement}")
+                                # Continue with next statement
+                                continue
+                else:
+                    # SQLite can execute multiple statements
+                    conn.executescript(schema)
                     conn.commit()
 
-        with open(self.schema_path) as f:
-            schema = f.read()
-
-        # Adjust schema for PostgreSQL if needed
-        if self.is_postgres:
-            schema = schema.replace('AUTOINCREMENT', 'GENERATED ALWAYS AS IDENTITY')
-            schema = schema.replace('TEXT', 'VARCHAR')
-
-        with self.get_connection() as conn:
-            if self.is_postgres:
-                # Execute each statement separately for PostgreSQL
-                statements = schema.split(';')
-                with conn.cursor() as cur:
-                    for statement in statements:
-                        if statement.strip():
-                            cur.execute(statement)
-            else:
-                # SQLite can execute multiple statements
-                conn.executescript(schema)
-            conn.commit()
+        except Exception as e:
+            logger.error(f"Error initializing database: {str(e)}")
+            raise
 
     def _serialize_list(self, data: List) -> str:
         """Serialize list data to JSON string"""

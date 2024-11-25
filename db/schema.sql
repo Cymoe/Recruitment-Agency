@@ -1,3 +1,6 @@
+-- Create extension for vector operations if it doesn't exist
+CREATE EXTENSION IF NOT EXISTS vector;
+
 -- Jobs table
 CREATE TABLE IF NOT EXISTS jobs (
     id SERIAL PRIMARY KEY,
@@ -29,50 +32,42 @@ CREATE TABLE IF NOT EXISTS candidates (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create extension for vector operations if it doesn't exist
-CREATE EXTENSION IF NOT EXISTS vector;
-
--- Applications table to track job applications
+-- Applications table
 CREATE TABLE IF NOT EXISTS applications (
     id SERIAL PRIMARY KEY,
-    candidate_id INTEGER NOT NULL,
-    job_id INTEGER NOT NULL,
+    candidate_id INTEGER REFERENCES candidates(id),
+    job_id INTEGER REFERENCES jobs(id),
     status VARCHAR(50) NOT NULL DEFAULT 'pending',
     submission_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (candidate_id) REFERENCES candidates(id),
-    FOREIGN KEY (job_id) REFERENCES jobs(id)
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- Create index on vector column for faster similarity search
-CREATE INDEX IF NOT EXISTS resume_vector_idx ON candidates USING ivfflat (resume_vector vector_cosine_ops);
 
 -- Analysis Results table
 CREATE TABLE IF NOT EXISTS analysis_results (
     id SERIAL PRIMARY KEY,
-    application_id INTEGER NOT NULL,
+    application_id INTEGER REFERENCES applications(id),
     technical_skills TEXT,
-    experience_level TEXT,
-    education_level TEXT,
+    experience_level VARCHAR(50),
+    education_level VARCHAR(50),
     key_achievements TEXT,
     domain_expertise TEXT,
-    analysis_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (application_id) REFERENCES applications(id)
+    analysis_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Job Matches table
 CREATE TABLE IF NOT EXISTS job_matches (
     id SERIAL PRIMARY KEY,
-    application_id INTEGER NOT NULL,
-    job_id INTEGER NOT NULL,
-    match_score INTEGER,
+    application_id INTEGER REFERENCES applications(id),
+    job_id INTEGER REFERENCES jobs(id),
+    match_score FLOAT,
     reasoning TEXT,
     key_matches TEXT,
     skill_gaps TEXT,
-    match_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (application_id) REFERENCES applications(id),
-    FOREIGN KEY (job_id) REFERENCES jobs(id)
+    match_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Create index on vector column for faster similarity search
+CREATE INDEX IF NOT EXISTS resume_vector_idx ON candidates USING ivfflat (resume_vector vector_cosine_ops);
 
 -- Screening Reports table
 CREATE TABLE IF NOT EXISTS screening_reports (
