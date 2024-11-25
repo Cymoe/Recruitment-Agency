@@ -1,4 +1,3 @@
-# Streamlit Web Application
 import streamlit as st
 import asyncio
 import os
@@ -8,27 +7,9 @@ from streamlit_option_menu import option_menu
 from agents.orchestrator import OrchestratorAgent
 from utils.logger import setup_logger
 from utils.exceptions import ResumeProcessingError
-import threading
 
-# Add FastAPI for health checks
-from fastapi import FastAPI
-import uvicorn
-
-# Initialize FastAPI
-api = FastAPI()
-
-# Health check endpoint
-@api.get("/health")
-def health_check():
-    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
-
-# Function to run FastAPI server
-def run_fastapi():
-    try:
-        port = int(os.getenv('FASTAPI_PORT', '8000'))
-        uvicorn.run(api, host="0.0.0.0", port=port, log_level="info")
-    except Exception as e:
-        logger.error(f"Failed to start FastAPI server: {str(e)}")
+# Initialize logger
+logger = setup_logger()
 
 # Configure Streamlit page
 st.set_page_config(
@@ -37,36 +18,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
-
-# Initialize logger
-logger = setup_logger()
-
-# Custom CSS
-st.markdown(
-    """
-    <style>
-        .stProgress .st-bo {
-            background-color: #00a0dc;
-        }
-        .success-text {
-            color: #00c853;
-        }
-        .warning-text {
-            color: #ffd700;
-        }
-        .error-text {
-            color: #ff5252;
-        }
-        .st-emotion-cache-1v0mbdj.e115fcil1 {
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 20px;
-        }
-    </style>
-""",
-    unsafe_allow_html=True,
-)
-
 
 async def process_resume(file_path: str) -> dict:
     """Process resume through the AI recruitment pipeline"""
@@ -80,7 +31,6 @@ async def process_resume(file_path: str) -> dict:
     except Exception as e:
         logger.error(f"Error processing resume: {str(e)}")
         raise
-
 
 def save_uploaded_file(uploaded_file) -> str:
     """Save uploaded file and return the file path"""
@@ -102,12 +52,7 @@ def save_uploaded_file(uploaded_file) -> str:
         st.error(f"Error saving file: {str(e)}")
         raise
 
-
 def main():
-    # Start FastAPI in a background thread
-    fastapi_thread = threading.Thread(target=run_fastapi, daemon=True)
-    fastapi_thread.start()
-
     # Sidebar navigation
     with st.sidebar:
         st.image(

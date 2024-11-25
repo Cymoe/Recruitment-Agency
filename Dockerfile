@@ -21,5 +21,11 @@ COPY . .
 # Create uploads directory
 RUN mkdir -p uploads && chmod 777 uploads
 
-# Command to run the application
-CMD streamlit run --server.port 8501 --server.address 0.0.0.0 app.py
+# Create entrypoint script
+RUN echo '#!/bin/bash\n\
+STREAMLIT_PORT="${PORT:-8501}"\n\
+streamlit run --server.port $STREAMLIT_PORT --server.address 0.0.0.0 app.py' > /app/entrypoint.sh \
+    && chmod +x /app/entrypoint.sh
+
+# Set the entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]
