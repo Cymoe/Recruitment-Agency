@@ -21,13 +21,5 @@ COPY . .
 # Create uploads directory
 RUN mkdir -p uploads && chmod 777 uploads
 
-# Set default environment variables
-ENV PORT=8501
-ENV FASTAPI_PORT=8000
-
-# Expose ports
-EXPOSE 8501
-EXPOSE 8000
-
-# Command to run the application using Python script
-CMD ["python", "start.py"]
+# Command to run the application
+CMD streamlit run --server.port 8501 --server.address 0.0.0.0 app.py
