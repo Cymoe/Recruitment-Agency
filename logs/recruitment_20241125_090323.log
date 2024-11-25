@@ -1,0 +1,19 @@
+2024-11-25 09:04:00,234 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-25 09:04:09,545 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-25 09:07:21,447 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-25 09:07:33,510 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-25 09:07:51,959 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-25 09:08:16,128 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-25 09:08:38,966 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-25 09:08:38,978 - AI_Recruiter - ERROR - Processing error: 'skills_analysis'
+Traceback (most recent call last):
+  File "/Users/myleswebb/webblabs/swarm-writer-agents/ai-recruiter-agency/app.py", line 146, in main
+    st.write(result["analysis_results"]["skills_analysis"])
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+KeyError: 'skills_analysis'
+2024-11-25 09:14:09,598 - openai._base_client - INFO - Retrying request to /chat/completions in 0.980154 seconds
+2024-11-25 09:14:22,420 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-25 09:14:22,683 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2024-11-25 09:14:22,685 - openai._base_client - INFO - Retrying request to /chat/completions in 4.344000 seconds
+2024-11-25 09:14:45,005 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-25 09:15:05,129 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
