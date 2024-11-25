@@ -1,0 +1,28 @@
+2024-11-25 08:59:05,480 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-25 08:59:12,831 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-25 08:59:37,613 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2024-11-25 08:59:37,620 - AI_Recruiter - ERROR - Error processing resume: 'ScreenerAgent' object has no attribute '_query_ollama'
+2024-11-25 08:59:37,622 - AI_Recruiter - ERROR - Processing error: 'ScreenerAgent' object has no attribute '_query_ollama'
+Traceback (most recent call last):
+  File "/Users/myleswebb/webblabs/swarm-writer-agents/ai-recruiter-agency/app.py", line 128, in main
+    result = asyncio.run(process_resume(file_path))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Caskroom/miniconda/base/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Caskroom/miniconda/base/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Caskroom/miniconda/base/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/myleswebb/webblabs/swarm-writer-agents/ai-recruiter-agency/app.py", line 58, in process_resume
+    return await orchestrator.process_application(resume_data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/myleswebb/webblabs/swarm-writer-agents/ai-recruiter-agency/agents/orchestrator.py", line 70, in process_application
+    screening_results = await self.screener.run(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/myleswebb/webblabs/swarm-writer-agents/ai-recruiter-agency/agents/screener_agent.py", line 23, in run
+    screening_results = self._query_ollama(str(workflow_context))
+                        ^^^^^^^^^^^^^^^^^^
+AttributeError: 'ScreenerAgent' object has no attribute '_query_ollama'
