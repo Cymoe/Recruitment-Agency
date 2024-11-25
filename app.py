@@ -9,6 +9,19 @@ from agents.orchestrator import OrchestratorAgent
 from utils.logger import setup_logger
 from utils.exceptions import ResumeProcessingError
 
+# Add FastAPI for health checks
+from fastapi import FastAPI
+from fastapi.middleware.wsgi import WSGIMiddleware
+import uvicorn
+
+# Initialize FastAPI
+api = FastAPI()
+
+# Health check endpoint
+@api.get("/health")
+def health_check():
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
 # Configure Streamlit page
 st.set_page_config(
     page_title="AI Recruiter Agency",

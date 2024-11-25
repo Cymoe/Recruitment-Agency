@@ -1,73 +1,82 @@
 -- Jobs table
 CREATE TABLE IF NOT EXISTS jobs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    company TEXT NOT NULL,
-    location TEXT NOT NULL,
-    type TEXT NOT NULL,
-    experience_level TEXT NOT NULL,
-    salary_range TEXT,
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    company VARCHAR(255) NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    experience_level VARCHAR(50) NOT NULL,
+    salary_range VARCHAR(100),
     description TEXT NOT NULL,
     requirements TEXT NOT NULL,
     benefits TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Candidates table
 CREATE TABLE IF NOT EXISTS candidates (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
-    email TEXT UNIQUE,
-    phone TEXT,
-    location TEXT,
-    current_title TEXT,
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    email VARCHAR(255) UNIQUE,
+    phone VARCHAR(50),
+    location VARCHAR(255),
+    current_title VARCHAR(255),
     resume_path TEXT,
     raw_text TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    resume_vector vector(1536),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Create extension for vector operations if it doesn't exist
+CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Applications table to track job applications
 CREATE TABLE IF NOT EXISTS applications (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     candidate_id INTEGER NOT NULL,
-    status TEXT NOT NULL DEFAULT 'pending',
-    submission_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    last_updated DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (candidate_id) REFERENCES candidates(id)
+    job_id INTEGER NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    submission_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (candidate_id) REFERENCES candidates(id),
+    FOREIGN KEY (job_id) REFERENCES jobs(id)
 );
+
+-- Create index on vector column for faster similarity search
+CREATE INDEX IF NOT EXISTS resume_vector_idx ON candidates USING ivfflat (resume_vector vector_cosine_ops);
 
 -- Analysis Results table
 CREATE TABLE IF NOT EXISTS analysis_results (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     application_id INTEGER NOT NULL,
     technical_skills TEXT,
     experience_level TEXT,
     education_level TEXT,
     key_achievements TEXT,
     domain_expertise TEXT,
-    analysis_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    analysis_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(id)
 );
 
 -- Job Matches table
 CREATE TABLE IF NOT EXISTS job_matches (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     application_id INTEGER NOT NULL,
     job_id INTEGER NOT NULL,
     match_score INTEGER,
     reasoning TEXT,
     key_matches TEXT,
     skill_gaps TEXT,
-    match_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    match_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(id),
     FOREIGN KEY (job_id) REFERENCES jobs(id)
 );
 
 -- Screening Reports table
 CREATE TABLE IF NOT EXISTS screening_reports (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     application_id INTEGER NOT NULL,
     qualification_score INTEGER,
     qualification_analysis TEXT,
@@ -78,13 +87,13 @@ CREATE TABLE IF NOT EXISTS screening_reports (
     gaps TEXT,
     cultural_fit_indicators TEXT,
     red_flags TEXT,
-    screening_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    screening_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(id)
 );
 
 -- Recommendations table
 CREATE TABLE IF NOT EXISTS recommendations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     application_id INTEGER NOT NULL,
     candidate_strengths TEXT,
     development_areas TEXT,
@@ -96,6 +105,6 @@ CREATE TABLE IF NOT EXISTS recommendations (
     decision_rationale TEXT,
     compensation_range TEXT,
     growth_path TEXT,
-    recommendation_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    recommendation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(id)
 );
