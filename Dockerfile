@@ -29,5 +29,11 @@ ENV FASTAPI_PORT=8000
 EXPOSE 8501
 EXPOSE 8000
 
-# Command to run Streamlit directly (Railway will use this port)
-CMD streamlit run app.py --server.port=$PORT --server.address=0.0.0.0
+# Create start script with proper port handling
+RUN echo '#!/bin/bash\n\
+PORT="${PORT:-8501}"\n\
+streamlit run app.py --server.port=$PORT --server.address=0.0.0.0' > start.sh && \
+    chmod +x start.sh
+
+# Command to run the application
+CMD ["./start.sh"]
